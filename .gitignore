@@ -1,0 +1,5 @@
+laravel/.env
+laravel/vendor
+laravel/node_modules
+frontend/**/node_modules
+.pgdata
