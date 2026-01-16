@@ -143,11 +143,25 @@ const menuItems = [
     to: { name: 'dashboard' },
   },
   {
-    title: 'Perfil',
-    icon: 'person',
-    to: { name: 'profile' },
+    title: 'Organizações',
+    icon: 'business',
+    to: { name: 'organizations' },
   },
-  // Adicionar mais itens de menu aqui
+  {
+    title: 'Unidades',
+    icon: 'store',
+    to: { name: 'tenants' },
+  },
+  {
+    title: 'Usuários',
+    icon: 'people',
+    to: { name: 'users' },
+  },
+  {
+    title: 'Perfis',
+    icon: 'admin_panel_settings',
+    to: { name: 'roles' },
+  },
 ]
 
 async function handleLogout() {

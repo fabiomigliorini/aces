@@ -5,8 +5,10 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\TenantController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Public
@@ -16,20 +18,31 @@ Route::post("/login", [AuthController::class, "login"]);
 
 // Authenticated (sem tenant obrigatório)
 Route::middleware("auth:sanctum")->group(function () {
+    // Auth
     Route::post("/logout", [AuthController::class, "logout"]);
     Route::get("/user", [AuthController::class, "user"]);
-    Route::get("/tenants", [TenantController::class, "index"]);
-    Route::get("/organizations", [OrganizationController::class, "index"]);
-    Route::get("/organizations/{organization}", [OrganizationController::class, "show"]);
+
+    // Organizations CRUD
+    Route::apiResource("organizations", OrganizationController::class);
+
+    // Tenants CRUD
+    Route::apiResource("tenants", TenantController::class);
+    Route::get("/tenant/current", [TenantController::class, "current"]);
+
+    // Roles CRUD
+    Route::get("/roles/permissions", [RoleController::class, "permissions"]);
+    Route::apiResource("roles", RoleController::class);
+
+    // Users CRUD
+    Route::apiResource("users", UserController::class);
+    Route::get("/users/{user}/tenants", [UserController::class, "tenants"]);
+    Route::post("/users/{user}/tenants", [UserController::class, "attachTenant"]);
+    Route::put("/users/{user}/tenants/{tenant}", [UserController::class, "updateTenant"]);
+    Route::delete("/users/{user}/tenants/{tenant}", [UserController::class, "detachTenant"]);
 });
 
 // Authenticated + Tenant resolvido (pode ser null para multi-tenant queries)
 Route::middleware(["auth:sanctum", "tenant"])->group(function () {
-    Route::get("/tenant/current", [TenantController::class, "current"]);
-    
-    // Organization-level (não precisa de tenant)
-    // Route::apiResource("products", ProductController::class);
-    
     // Multi-tenant queries
     Route::get("/stocks/consolidated", [StockController::class, "consolidated"]);
 });

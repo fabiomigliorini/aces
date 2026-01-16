@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Collection;
 
 class Organization extends Model
 {
@@ -29,9 +31,14 @@ class Organization extends Model
         return $this->hasMany(Tenant::class);
     }
 
-    public function users(): HasMany
+    /**
+     * Get all users that belong to this organization through tenants.
+     */
+    public function users(): Collection
     {
-        return $this->hasMany(User::class);
+        return User::whereHas('tenants', function ($query) {
+            $query->where('organization_id', $this->id);
+        })->get();
     }
 
     public function roles(): HasMany

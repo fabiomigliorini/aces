@@ -1,17 +1,23 @@
 import { api } from './api'
 
 export const organizationService = {
-  async list() {
-    return api.get('/api/organizations')
+  async list(params = {}) {
+    return api.get('/api/organizations', { params })
   },
 
   async get(id) {
     return api.get(`/api/organizations/${id}`)
   },
 
-  async switch(organizationId) {
-    return api.post('/api/organizations/switch', {
-      organization_id: organizationId,
-    })
+  async create(data) {
+    return api.post('/api/organizations', data)
+  },
+
+  async update(id, data) {
+    return api.put(`/api/organizations/${id}`, data)
+  },
+
+  async delete(id) {
+    return api.delete(`/api/organizations/${id}`)
   },
 }

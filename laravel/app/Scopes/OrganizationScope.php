@@ -11,7 +11,24 @@ class OrganizationScope implements Scope
     public function apply(Builder $builder, Model $model): void
     {
         if (auth()->check()) {
-            $builder->where($model->getTable() . ".organization_id", auth()->user()->organization_id);
+            $user = auth()->user();
+
+            // Super admin bypassa o filtro de organização
+            if ($user->isSuperAdmin()) {
+                return;
+            }
+
+            // Get all organization IDs the user has access to via tenants
+            $organizationIds = $user->tenants()
+                ->select('organization_id')
+                ->distinct()
+                ->pluck('organization_id');
+
+            if ($organizationIds->isNotEmpty()) {
+                $builder->whereIn($model->getTable() . ".organization_id", $organizationIds);
+            } else {
+                $builder->whereRaw('1 = 0'); // No access
+            }
         }
     }
 }

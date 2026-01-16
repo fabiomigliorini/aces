@@ -39,7 +39,27 @@ const routes = [
         name: 'profile',
         component: () => import('pages/ProfilePage.vue'),
       },
-      // Adicionar mais rotas protegidas aqui
+      // Cadastros
+      {
+        path: 'organizations',
+        name: 'organizations',
+        component: () => import('pages/organizations/OrganizationsPage.vue'),
+      },
+      {
+        path: 'tenants',
+        name: 'tenants',
+        component: () => import('pages/tenants/TenantsPage.vue'),
+      },
+      {
+        path: 'users',
+        name: 'users',
+        component: () => import('pages/users/UsersPage.vue'),
+      },
+      {
+        path: 'roles',
+        name: 'roles',
+        component: () => import('pages/roles/RolesPage.vue'),
+      },
     ],
   },
 

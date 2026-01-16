@@ -20,12 +20,17 @@ trait BelongsToTenant
         static::addGlobalScope(new TenantScope());
 
         static::creating(function ($model) {
-            if (empty($model->organization_id) && auth()->check()) {
-                $model->organization_id = auth()->user()->organization_id;
-            }
-            
+            // Auto-fill tenant_id from current tenant
             if (empty($model->tenant_id)) {
                 $model->tenant_id = app(TenantService::class)->currentId();
+            }
+
+            // Auto-fill organization_id from the tenant
+            if (empty($model->organization_id) && $model->tenant_id) {
+                $tenant = Tenant::find($model->tenant_id);
+                if ($tenant) {
+                    $model->organization_id = $tenant->organization_id;
+                }
             }
         });
     }
@@ -46,7 +51,7 @@ trait BelongsToTenant
     /**
      * Query para múltiplos tenants autorizados.
      * Valida que o usuário tem acesso a todos os tenants solicitados.
-     * 
+     *
      * @param array|null $tenantIds - IDs dos tenants. Se null, usa todos do usuário.
      */
     public function scopeForTenants($query, ?array $tenantIds = null)
@@ -54,7 +59,7 @@ trait BelongsToTenant
         $query->withoutGlobalScope(TenantScope::class);
 
         $user = auth()->user();
-        
+
         if (!$user) {
             return $query->whereRaw("1 = 0"); // Retorna vazio
         }
@@ -70,9 +75,7 @@ trait BelongsToTenant
             $tenantIds = array_intersect($tenantIds, $allowedTenantIds);
         }
 
-        // Sempre filtra pela organization do usuário (segurança extra)
-        return $query
-            ->where($this->getTable() . ".organization_id", $user->organization_id)
-            ->whereIn($this->getTable() . ".tenant_id", $tenantIds);
+        // Filtra pelos tenants autorizados
+        return $query->whereIn($this->getTable() . ".tenant_id", $tenantIds);
     }
 }

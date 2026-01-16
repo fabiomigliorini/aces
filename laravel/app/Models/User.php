@@ -2,21 +2,19 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens, BelongsToOrganization;
+    use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = [
-        "organization_id",
         "name",
         "email",
         "password",
@@ -32,17 +30,43 @@ class User extends Authenticatable
         return [
             "email_verified_at" => "datetime",
             "password" => "hashed",
+            "is_super_admin" => "boolean",
         ];
     }
 
-    public function organization(): BelongsTo
+    /**
+     * Check if user is a super admin (has access to everything).
+     */
+    public function isSuperAdmin(): bool
     {
-        return $this->belongsTo(Organization::class);
+        return $this->is_super_admin === true;
+    }
+
+    /**
+     * Get all organizations the user has access to through their tenants.
+     * Super admins get all organizations.
+     */
+    public function organizations(): Collection
+    {
+        return Organization::whereHas('tenants', function ($query) {
+            $query->whereIn('id', $this->tenants()->pluck('tenants.id'));
+        })->get();
+    }
+
+    /**
+     * Check if user belongs to an organization (through any tenant).
+     */
+    public function belongsToOrganization(Organization $organization): bool
+    {
+        return $this->tenants()
+            ->where('organization_id', $organization->id)
+            ->exists();
     }
 
     public function tenants(): BelongsToMany
     {
         return $this->belongsToMany(Tenant::class, "tenant_user")
+            ->using(TenantUser::class)
             ->withPivot(["role_id", "is_default"])
             ->withTimestamps();
     }

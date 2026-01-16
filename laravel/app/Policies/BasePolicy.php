@@ -60,10 +60,10 @@ abstract class BasePolicy
     }
 
     /**
-     * Verifica se model pertence à organization do usuário.
+     * Verifica se model pertence a uma das organizations do usuário.
      */
     protected function belongsToUserOrganization(User $user, $model): bool
     {
-        return $model->organization_id === $user->organization_id;
+        return $user->belongsToOrganization($model->organization);
     }
 }
