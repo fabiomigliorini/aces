@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\StockController;
@@ -18,6 +19,8 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::post("/logout", [AuthController::class, "logout"]);
     Route::get("/user", [AuthController::class, "user"]);
     Route::get("/tenants", [TenantController::class, "index"]);
+    Route::get("/organizations", [OrganizationController::class, "index"]);
+    Route::get("/organizations/{organization}", [OrganizationController::class, "show"]);
 });
 
 // Authenticated + Tenant resolvido (pode ser null para multi-tenant queries)
