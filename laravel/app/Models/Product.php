@@ -3,16 +3,14 @@
 namespace App\Models;
 
 use App\Traits\BelongsToOrganizationWithScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Product - Organization-level (compartilhado entre todos os tenants)
- */
 class Product extends Model
 {
-    use SoftDeletes, BelongsToOrganizationWithScope;
+    use HasFactory, SoftDeletes, BelongsToOrganizationWithScope;
 
     protected $fillable = [
         "organization_id",
@@ -32,10 +30,5 @@ class Product extends Model
     public function stocks(): HasMany
     {
         return $this->hasMany(Stock::class);
-    }
-
-    public function prices(): HasMany
-    {
-        return $this->hasMany(Price::class);
     }
 }

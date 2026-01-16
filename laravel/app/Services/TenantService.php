@@ -30,13 +30,6 @@ class TenantService
         return $this->current !== null;
     }
 
-    /**
-     * Resolve tenant a partir do request.
-     * Fontes (em ordem de prioridade):
-     * 1. Header X-Tenant-Id
-     * 2. Subdomínio (se configurado)
-     * 3. Tenant default do usuário
-     */
     public function resolveFromRequest(?int $tenantId, User $user): ?Tenant
     {
         if (!$tenantId) {
@@ -50,9 +43,6 @@ class TenantService
             ->first();
     }
 
-    /**
-     * Retorna IDs dos tenants que o usuário pode acessar.
-     */
     public function allowedTenantIds(User $user): array
     {
         return $user->tenants()
@@ -61,24 +51,27 @@ class TenantService
             ->toArray();
     }
 
-    /**
-     * Valida se usuário tem acesso a um conjunto de tenants.
-     * Retorna apenas os IDs válidos.
-     */
     public function validateTenantIds(User $user, array $tenantIds): array
     {
         $allowed = $this->allowedTenantIds($user);
         return array_values(array_intersect($tenantIds, $allowed));
     }
 
-    /**
-     * Verifica se usuário pode acessar um tenant específico.
-     */
     public function userCanAccessTenant(User $user, int $tenantId): bool
     {
         return $user->tenants()
             ->where("tenants.id", $tenantId)
             ->where("tenants.is_active", true)
             ->exists();
+    }
+
+    /**
+     * Retorna todos os tenants que o usuário tem acesso.
+     */
+    public function availableForUser(User $user): Collection
+    {
+        return $user->tenants()
+            ->where("is_active", true)
+            ->get();
     }
 }

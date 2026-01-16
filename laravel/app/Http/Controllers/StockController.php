@@ -30,14 +30,19 @@ class StockController extends Controller
      */
     public function consolidated(Request $request): JsonResponse
     {
-        $tenantIds = null;
-        
+        $requestedTenantIds = null;
+
         if ($request->has("tenant_ids")) {
-            $tenantIds = array_map("intval", explode(",", $request->tenant_ids));
+            $requestedTenantIds = array_map("intval", explode(",", $request->tenant_ids));
         }
 
+        // Valida e filtra tenant_ids para apenas os autorizados
+        $validatedTenantIds = $requestedTenantIds
+            ? $this->tenantService->validateTenantIds(auth()->user(), $requestedTenantIds)
+            : $this->tenantService->allowedTenantIds(auth()->user());
+
         // forTenants() valida acesso e filtra
-        $stocks = Stock::forTenants($tenantIds)
+        $stocks = Stock::forTenants($requestedTenantIds)
             ->with(["product", "tenant:id,name"])
             ->get()
             ->groupBy("product_id")
@@ -56,7 +61,7 @@ class StockController extends Controller
 
         return response()->json([
             "data" => $stocks,
-            "tenants_included" => $tenantIds ?? $this->tenantService->allowedTenantIds(auth()->user()),
+            "tenants_included" => $validatedTenantIds,
         ]);
     }
 

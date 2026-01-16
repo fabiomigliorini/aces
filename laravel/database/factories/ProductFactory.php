@@ -3,32 +3,28 @@
 namespace Database\Factories;
 
 use App\Models\Organization;
-use App\Models\User;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
-class UserFactory extends Factory
+class ProductFactory extends Factory
 {
-    protected $model = User::class;
-    protected static ?string $password = null;
+    protected $model = Product::class;
 
     public function definition(): array
     {
         return [
             "organization_id" => Organization::factory(),
-            "name" => fake()->name(),
-            "email" => fake()->unique()->safeEmail(),
-            "email_verified_at" => now(),
-            "password" => static::$password ??= Hash::make("password"),
-            "remember_token" => Str::random(10),
+            "name" => fake()->words(3, true),
+            "sku" => strtoupper(fake()->unique()->bothify("SKU-####-???")),
+            "description" => fake()->sentence(),
+            "is_active" => true,
         ];
     }
 
-    public function unverified(): static
+    public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
-            "email_verified_at" => null,
+            "is_active" => false,
         ]);
     }
 
